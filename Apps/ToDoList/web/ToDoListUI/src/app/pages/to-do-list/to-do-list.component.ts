@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ToDoListService } from './service/todolist.service';
 import { Task } from 'src/app/models/task';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ShareLoaderService } from 'src/app/shared/share-loader/share-loader.service';
 import { SweetAlertService } from 'src/app/service/sweet-alert.service';
 
 @Component({
@@ -20,7 +19,6 @@ export class ToDoListComponent implements OnInit {
 
   constructor(private toDoListService: ToDoListService,
               private fb: FormBuilder,
-              private shareLoaderService: ShareLoaderService,
               private swal: SweetAlertService
   ) { }
 
@@ -38,7 +36,6 @@ export class ToDoListComponent implements OnInit {
   onSubmit(): void {
     if (this.taskForm.valid) {
       console.log('Formulario enviado con éxito:', this.taskForm.value);
-      // Aquí puedes manejar la lógica para enviar los datos a tu backend
     } else {
       console.log('Formulario inválido');
     }
@@ -80,17 +77,27 @@ export class ToDoListComponent implements OnInit {
 
   async updateTask(id:string, task: Task){
     this.swal.ShowQuestion("Actualización de Tarea","¿Está seguro de que desea completar esta tarea?").then(resp => {
+      this.swal.ShowLoading();
       this.toDoListService.updateTask(id, task).then(resp => {
+        this.swal.CloseLoading();
         window.location.reload();
+      }).catch(resp => {
+        this.swal.CloseLoading();
+        this.swal.ShowError("Error", resp)
       })
     })
   }
 
   async deleteTask(id:string){
     this.swal.ShowQuestion("Eliminación de Tarea","¿Está seguro de que desea eliminar esta tarea?").then(resp => {
+      this.swal.ShowLoading();
       this.toDoListService.deleteTask(id).then(resp => {
+        this.swal.CloseLoading();
         window.location.reload();
       })
+    }).catch(resp => {
+      this.swal.CloseLoading();
+      this.swal.ShowError("Error", resp)
     })
   }
 }
