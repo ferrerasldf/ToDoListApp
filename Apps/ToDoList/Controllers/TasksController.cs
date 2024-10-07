@@ -34,7 +34,7 @@ namespace ToDoList.Controllers
             }
             catch (Exception ex)
             {
-                throw ex;
+                return InternalServerError(ex);
             }
 
         }
@@ -79,13 +79,15 @@ namespace ToDoList.Controllers
         //POST: /Tasks
         public async Task<IHttpActionResult> Post(TaskEntity entity)
         {
-            // Verifica si el modelo es válido
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState); // Devuelve los errores de validación en el BadRequest
-
             try
             {
+                //Validación de que no existan campos vacios
+                if (String.IsNullOrEmpty(entity.Title) == true || String.IsNullOrEmpty(entity.Description) == true)
+                {
+                    return BadRequest("No debe existir algún campo vacio.");
+                }
                 // Añadir la nueva tarea a la base de datos
+                entity.Id = Guid.NewGuid();
                 _context.Tasks.Add(entity);
                 await _context.SaveChangesAsync(); // Asíncrono para mejor rendimiento
 
@@ -143,7 +145,7 @@ namespace ToDoList.Controllers
                 await _context.SaveChangesAsync();
 
                 // Devolver un OK (200) indicando que la tarea se eliminó correctamente
-                return Ok();
+                return Ok(task);
             }
             catch (Exception ex)
             {

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ToDoListService } from './service/todolist.service';
 import { Task } from 'src/app/models/task';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { SweetAlertService } from 'src/app/service/sweet-alert.service';
 
 @Component({
   selector: 'app-to-do-list',
@@ -10,28 +11,35 @@ import { FormBuilder, Validators } from '@angular/forms';
 })
 export class ToDoListComponent implements OnInit {
   tasksResult: Task[];
+  taskForm: FormGroup;
   totalPages: number = 0;   // Total de páginas
   pageNumber: number = 1;   // Página actual
   pageSize: number = 5;     // Tamaño de la página (cuántos registros por página)
   totalRecords: number = 0;
 
   constructor(private toDoListService: ToDoListService,
-              private fb: FormBuilder
+              private fb: FormBuilder,
+              private swal: SweetAlertService
   ) { }
 
   ngOnInit() {
+    this.taskForm = this.fb.group({
+      title: ["", [Validators.required]],
+      description: ["", [Validators.required]],
+      isCompleted: [false],
+      isEliminated: [false],
+    });
     this.loadTasks()
   }
 
-  // private createFormGroup(){
-  //   return this.fb.group({
-  //     title : ["", [Validators.required]],
-  //     description: ["", [Validators.required]],
-  //     isCompleted: [false],
-  //     isEliminated : [false],
-  //   });
-  // }
-
+   // Método para manejar el envío del formulario
+  onSubmit(): void {
+    if (this.taskForm.valid) {
+      console.log('Formulario enviado con éxito:', this.taskForm.value);
+    } else {
+      console.log('Formulario inválido');
+    }
+  }
   async getTasks(){
     this.toDoListService.GetTask().then(resp => {
       this.tasksResult = resp
@@ -39,12 +47,15 @@ export class ToDoListComponent implements OnInit {
   }
 
   loadTasks() {
+    this.swal.ShowLoading();
     this.toDoListService.getTaskGrid(this.pageNumber, this.pageSize).subscribe(response => {
       this.tasksResult = response.Data;
       this.tasksResult = this.tasksResult.filter((el) => el.IsEliminated == false);
       this.totalRecords = response.TotalRecords;
       this.totalPages = response.TotalPages;
+      this.swal.CloseLoading();
     }, error => {
+      this.swal.CloseLoading();;
       console.error('Error al cargar las tareas', error);
     });
   }
@@ -65,13 +76,28 @@ export class ToDoListComponent implements OnInit {
   }
 
   async updateTask(id:string, task: Task){
-    this.toDoListService.updateTask(id, task).then(resp => {
-      window.location.reload();
+    this.swal.ShowQuestion("Actualización de Tarea","¿Está seguro de que desea completar esta tarea?").then(resp => {
+      this.swal.ShowLoading();
+      this.toDoListService.updateTask(id, task).then(resp => {
+        this.swal.CloseLoading();
+        window.location.reload();
+      }).catch(resp => {
+        this.swal.CloseLoading();
+        this.swal.ShowError("Error", resp)
+      })
     })
   }
+
   async deleteTask(id:string){
-    this.toDoListService.deleteTask(id).then(resp => {
-      window.location.reload();
+    this.swal.ShowQuestion("Eliminación de Tarea","¿Está seguro de que desea eliminar esta tarea?").then(resp => {
+      this.swal.ShowLoading();
+      this.toDoListService.deleteTask(id).then(resp => {
+        this.swal.CloseLoading();
+        window.location.reload();
+      })
+    }).catch(resp => {
+      this.swal.CloseLoading();
+      this.swal.ShowError("Error", resp)
     })
   }
 }
