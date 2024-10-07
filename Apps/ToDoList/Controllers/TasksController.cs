@@ -87,6 +87,7 @@ namespace ToDoList.Controllers
                     return BadRequest("No debe existir algún campo vacio.");
                 }
                 // Añadir la nueva tarea a la base de datos
+                entity.Id = Guid.NewGuid();
                 _context.Tasks.Add(entity);
                 await _context.SaveChangesAsync(); // Asíncrono para mejor rendimiento
 

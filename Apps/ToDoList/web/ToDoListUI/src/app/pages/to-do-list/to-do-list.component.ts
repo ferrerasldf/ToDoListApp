@@ -24,10 +24,10 @@ export class ToDoListComponent implements OnInit {
 
   ngOnInit() {
     this.taskForm = this.fb.group({
-      title : ["", [Validators.required]],
+      title: ["", [Validators.required]],
       description: ["", [Validators.required]],
       isCompleted: [false],
-      isEliminated : [false],
+      isEliminated: [false],
     });
     this.loadTasks()
   }
