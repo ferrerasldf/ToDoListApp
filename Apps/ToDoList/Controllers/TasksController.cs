@@ -34,7 +34,7 @@ namespace ToDoList.Controllers
             }
             catch (Exception ex)
             {
-                throw ex;
+                return InternalServerError(ex);
             }
 
         }
@@ -144,7 +144,7 @@ namespace ToDoList.Controllers
                 await _context.SaveChangesAsync();
 
                 // Devolver un OK (200) indicando que la tarea se eliminó correctamente
-                return Ok();
+                return Ok(task);
             }
             catch (Exception ex)
             {
