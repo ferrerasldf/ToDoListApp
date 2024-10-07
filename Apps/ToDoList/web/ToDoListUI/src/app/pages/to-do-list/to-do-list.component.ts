@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ToDoListService } from './service/todolist.service';
 import { Task } from 'src/app/models/task';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ShareLoaderService } from 'src/app/shared/share-loader/share-loader.service';
+import { SweetAlertService } from 'src/app/service/sweet-alert.service';
 
 @Component({
   selector: 'app-to-do-list',
@@ -17,7 +19,9 @@ export class ToDoListComponent implements OnInit {
   totalRecords: number = 0;
 
   constructor(private toDoListService: ToDoListService,
-              private fb: FormBuilder
+              private fb: FormBuilder,
+              private shareLoaderService: ShareLoaderService,
+              private swal: SweetAlertService
   ) { }
 
   ngOnInit() {
@@ -46,12 +50,15 @@ export class ToDoListComponent implements OnInit {
   }
 
   loadTasks() {
+    this.swal.ShowLoading();
     this.toDoListService.getTaskGrid(this.pageNumber, this.pageSize).subscribe(response => {
       this.tasksResult = response.Data;
       this.tasksResult = this.tasksResult.filter((el) => el.IsEliminated == false);
       this.totalRecords = response.TotalRecords;
       this.totalPages = response.TotalPages;
+      this.swal.CloseLoading();
     }, error => {
+      this.swal.CloseLoading();;
       console.error('Error al cargar las tareas', error);
     });
   }
@@ -72,13 +79,18 @@ export class ToDoListComponent implements OnInit {
   }
 
   async updateTask(id:string, task: Task){
-    this.toDoListService.updateTask(id, task).then(resp => {
-      window.location.reload();
+    this.swal.ShowQuestion("Actualización de Tarea","¿Está seguro de que desea completar esta tarea?").then(resp => {
+      this.toDoListService.updateTask(id, task).then(resp => {
+        window.location.reload();
+      })
     })
   }
+
   async deleteTask(id:string){
-    this.toDoListService.deleteTask(id).then(resp => {
-      window.location.reload();
+    this.swal.ShowQuestion("Eliminación de Tarea","¿Está seguro de que desea eliminar esta tarea?").then(resp => {
+      this.toDoListService.deleteTask(id).then(resp => {
+        window.location.reload();
+      })
     })
   }
 }
