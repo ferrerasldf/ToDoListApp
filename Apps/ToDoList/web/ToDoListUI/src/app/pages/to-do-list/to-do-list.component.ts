@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ToDoListService } from './service/todolist.service';
 import { Task } from 'src/app/models/task';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-to-do-list',
@@ -10,28 +10,35 @@ import { FormBuilder, Validators } from '@angular/forms';
 })
 export class ToDoListComponent implements OnInit {
   tasksResult: Task[];
+  taskForm: FormGroup;
   totalPages: number = 0;   // Total de páginas
   pageNumber: number = 1;   // Página actual
   pageSize: number = 5;     // Tamaño de la página (cuántos registros por página)
   totalRecords: number = 0;
 
   constructor(private toDoListService: ToDoListService,
-              //private fb: FormBuilder
+              private fb: FormBuilder
   ) { }
 
   ngOnInit() {
+    this.taskForm = this.fb.group({
+      title : ["", [Validators.required]],
+      description: ["", [Validators.required]],
+      isCompleted: [false],
+      isEliminated : [false],
+    });
     this.loadTasks()
   }
 
-  // private createFormGroup(){
-  //   return this.fb.group({
-  //     title : ["", [Validators.required]],
-  //     description: ["", [Validators.required]],
-  //     isCompleted: [false],
-  //     isEliminated : [false],
-  //   });
-  // }
-
+   // Método para manejar el envío del formulario
+  onSubmit(): void {
+    if (this.taskForm.valid) {
+      console.log('Formulario enviado con éxito:', this.taskForm.value);
+      // Aquí puedes manejar la lógica para enviar los datos a tu backend
+    } else {
+      console.log('Formulario inválido');
+    }
+  }
   async getTasks(){
     this.toDoListService.GetTask().then(resp => {
       this.tasksResult = resp

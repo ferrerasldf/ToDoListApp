@@ -79,12 +79,13 @@ namespace ToDoList.Controllers
         //POST: /Tasks
         public async Task<IHttpActionResult> Post(TaskEntity entity)
         {
-            // Verifica si el modelo es válido
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState); // Devuelve los errores de validación en el BadRequest
-
             try
             {
+                //Validación de que no existan campos vacios
+                if (String.IsNullOrEmpty(entity.Title) == true || String.IsNullOrEmpty(entity.Description) == true)
+                {
+                    return BadRequest("No debe existir algún campo vacio.");
+                }
                 // Añadir la nueva tarea a la base de datos
                 _context.Tasks.Add(entity);
                 await _context.SaveChangesAsync(); // Asíncrono para mejor rendimiento
